@@ -1,0 +1,9 @@
+[Unit]
+Description=Ежедневный отчёт в 07:00 (server-automation)
+
+[Timer]
+OnCalendar=*-*-* 07:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

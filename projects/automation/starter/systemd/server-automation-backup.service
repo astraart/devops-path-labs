@@ -1,0 +1,19 @@
+[Unit]
+Description=Резервная копия и ротация (server-automation)
+
+[Service]
+Type=oneshot
+# Настройки — переменные окружения из файла; сам файл не исполняется, в отличие от source.
+EnvironmentFile=/etc/server-automation/config.env
+# У oneshot может быть несколько ExecStart: они выполняются по очереди, ошибка останавливает цепочку.
+ExecStart=/opt/server-automation/bin/backup.sh
+ExecStart=/opt/server-automation/bin/rotate.sh
+# Защита: вся файловая система только для чтения, писать можно лишь в каталог бэкапов.
+ProtectSystem=strict
+ReadWritePaths=/var/backups/server-automation
+ProtectHome=read-only
+PrivateTmp=yes
+NoNewPrivileges=yes
+# Бэкап не должен мешать основной работе сервера.
+Nice=10
+IOSchedulingClass=idle

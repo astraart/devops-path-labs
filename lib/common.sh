@@ -11,6 +11,7 @@ MASK=0
 CHECKED=0
 NEED_ROOT=0
 MANUAL=()
+LAB_ARGS=()
 
 # Домашний каталог ученика, даже если скрипт запущен через sudo.
 LAB_USER="${SUDO_USER:-${USER:-$(id -un)}}"
@@ -21,12 +22,13 @@ H="${H:-$HOME}"
 lab_init() {
     LAB_ID="$1"
     CHALLENGE="${2:-}"
+    LAB_ARGS=("${@:2}")
     if [[ ! "$CHALLENGE" =~ ^[0-9]{4}$ ]]; then
         echo "Использование: $0 ЧИСЛО [ПУТЬ]" >&2
         echo "ЧИСЛО — четыре цифры с экрана практики в приложении DevOps Path." >&2
         exit 2
     fi
-    echo "Проверка практики «$LAB_ID»"
+    echo "Проверка «$LAB_ID»"
     echo
 }
 
@@ -39,6 +41,16 @@ as_root() {
         sudo -n "$@"
     else
         return 3
+    fi
+}
+
+# as_user КОМАНДА — выполнить от имени ученика, даже если скрипт запущен через sudo:
+# git отказывается работать от root с репозиторием, который принадлежит другому пользователю.
+as_user() {
+    if [[ $EUID -eq 0 && -n "${SUDO_USER:-}" && "$SUDO_USER" != root ]]; then
+        runuser -u "$SUDO_USER" -- "$@"
+    else
+        "$@"
     fi
 }
 
@@ -84,7 +96,7 @@ lab_finish() {
     fi
     if [[ $NEED_ROOT -eq 1 ]]; then
         echo
-        echo "Часть проверок требует root. Повторите: sudo $0 $CHALLENGE"
+        echo "Часть проверок требует root. Повторите: sudo $0 ${LAB_ARGS[*]}"
     fi
     echo
     echo "Код для приложения: $(lab_code "$LAB_ID" "$CHALLENGE" "$MASK")"

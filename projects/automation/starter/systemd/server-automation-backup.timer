@@ -1,0 +1,12 @@
+[Unit]
+Description=Ежедневная резервная копия (server-automation)
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+# Случайная задержка до 15 минут, чтобы бэкапы многих серверов не стартовали одновременно.
+RandomizedDelaySec=15min
+# Если сервер был выключен в 02:30, бэкап выполнится сразу после включения.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

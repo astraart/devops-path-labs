@@ -1,0 +1,4 @@
+# Настоящий конфиг сервера в репозиторий не попадает — только config.env.example.
+config.env
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,12 @@
+[Unit]
+Description=Ежедневный отчёт (server-automation)
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/server-automation/config.env
+ExecStart=/usr/bin/python3 /opt/server-automation/bin/report.py
+ProtectSystem=strict
+ReadWritePaths=/var/lib/server-automation
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes

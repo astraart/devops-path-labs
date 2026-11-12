@@ -1,0 +1,14 @@
+[Unit]
+Description=Проверки сервера (server-automation)
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/server-automation/config.env
+ExecStart=/usr/bin/python3 /opt/server-automation/bin/healthcheck.py
+# Зависший запуск будет остановлен: следующий начнётся по таймеру.
+TimeoutStartSec=60
+ProtectSystem=strict
+ReadWritePaths=/var/lib/server-automation
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
