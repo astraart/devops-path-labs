@@ -51,7 +51,7 @@ python3 -m pytest -q
 ## Проверка
 
 ```bash
-sudo ~/devops-path-labs/projects/automation/check.sh ЧИСЛО ~/server-automation
+cd ~/devops-path-labs && sudo ./projects/automation/check.sh ЧИСЛО ~/server-automation
 ```
 
 ЧИСЛО — четыре цифры с экрана проекта в приложении. Скрипт только читает репозиторий и состояние сервера и печатает код для приложения. `sudo` нужен, чтобы прочитать архивы и отчёты — они доступны только root.

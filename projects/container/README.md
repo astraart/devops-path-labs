@@ -47,7 +47,7 @@ docker run --rm -v "$PWD":/src -w /src golang:1.27-trixie go test ./...
 ## Проверка
 
 ```bash
-~/devops-path-labs/projects/container/check.sh ЧИСЛО ~/notes-api
+cd ~/devops-path-labs && sudo ./projects/container/check.sh ЧИСЛО ~/notes-api
 ```
 
-ЧИСЛО — четыре цифры с экрана проекта в приложении. Скрипт только читает: репозиторий, `docker image inspect`, `docker inspect` и ответы сервиса на `localhost:8080`. Если вы не в группе `docker`, запустите через `sudo`. Зелёный пайплайн и образ в реестре скрипт не видит — их отметьте в приложении сами.
+ЧИСЛО — четыре цифры с экрана проекта в приложении. Скрипт только читает: репозиторий, `docker image inspect`, `docker inspect` и ответы сервиса на `localhost:8080`. `sudo` нужен, если вы не в группе `docker`; git скрипт всё равно запускает от вашего имени. Зелёный пайплайн и образ в реестре скрипт не видит — их отметьте в приложении сами.

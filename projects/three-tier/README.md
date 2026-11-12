@@ -69,10 +69,10 @@ cd ~/three-tier/ansible && ansible-playbook site.yml --ask-vault-pass
 ## Проверка
 
 ```bash
-~/devops-path-labs/projects/three-tier/check.sh ЧИСЛО ~/three-tier
+cd ~/devops-path-labs && sudo ./projects/three-tier/check.sh ЧИСЛО ~/three-tier
 ```
 
-ЧИСЛО — четыре цифры с экрана проекта в приложении. Скрипт только читает: репозиторий, `lxc list`, `terraform output` и ответы машин стенда по их адресам в мосте LXD. Если вы не в группе `lxd`, запустите через `sudo`.
+ЧИСЛО — четыре цифры с экрана проекта в приложении. Скрипт только читает: репозиторий, `lxc list`, `terraform output` и ответы машин стенда по их адресам в мосте LXD. `sudo` нужен, если вы не в группе `lxd`; git и terraform скрипт всё равно запускает от вашего имени.
 
 ## Как удалить стенд
 
