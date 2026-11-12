@@ -1,0 +1,41 @@
+- name: Подготовка всех машин
+  hosts: all
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Дождаться, пока машина ответит
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Есть ли cloud-init
+      ansible.builtin.stat:
+        path: /usr/bin/cloud-init
+      register: cloud_init_bin
+
+    - name: Дождаться окончания cloud-init (пользователи, ключи, пакеты)
+      ansible.builtin.command: cloud-init status --wait
+      changed_when: false
+      when: cloud_init_bin.stat.exists
+
+    - name: Собрать факты
+      ansible.builtin.setup:
+  roles:
+    - common
+
+- name: База данных
+  hosts: db
+  become: true
+  roles:
+    - postgres
+
+- name: Приложение
+  hosts: app
+  become: true
+  roles:
+    - app
+
+- name: Балансировщик
+  hosts: lb
+  become: true
+  roles:
+    - lb

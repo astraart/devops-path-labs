@@ -1,0 +1,8 @@
+---
+# TODO: роль базы данных.
+# - пакеты postgresql и python3-psycopg2 (нужен модулям community.postgresql);
+# - listen_addresses: localhost и private_ip машины (postgresql.conf, перезапуск через обработчик);
+# - pg_hba: база db_name, пользователь db_user, только с private_ip машин группы app, метод scram-sha-256;
+# - пользователь и база (community.postgresql.postgresql_user с no_log, postgresql_db) от имени postgres;
+# - ufw: 5432/tcp только с машин группы app.
+[]

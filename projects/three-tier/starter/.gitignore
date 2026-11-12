@@ -1,0 +1,10 @@
+# Состояние Terraform содержит адреса и секреты стенда — в git его не кладут.
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+# Инвентарь создаёт Terraform.
+ansible/inventory.ini
+# Пароль от vault — только у вас.
+.vault_pass
+*.retry

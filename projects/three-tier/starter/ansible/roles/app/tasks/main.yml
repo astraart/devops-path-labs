@@ -1,0 +1,10 @@
+---
+# TODO: роль приложения.
+# - системный пользователь notes без входа в систему;
+# - бинарник files/notes-api → /usr/local/bin/notes-api (соберите его: ./build-app.sh);
+# - /etc/notes-api.env (права 0600, diff: false): PORT и DATABASE_URL с адресом базы.
+#   Пароль в URL нужно закодировать: urlencode в Jinja не кодирует «/»;
+# - юнит systemd: User=notes, EnvironmentFile, Restart=on-failure, ограничения NoNewPrivileges и ProtectSystem;
+# - сервис включён и запущен; ufw: порт app_port только с машин группы lb;
+# - проверка: /readyz отвечает 200 (модуль uri с retries) — значит, приложение видит базу.
+[]

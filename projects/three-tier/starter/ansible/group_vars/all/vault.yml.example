@@ -1,0 +1,5 @@
+# Скопируйте в vault.yml, придумайте пароль и зашифруйте файл:
+#   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+#   ansible-vault encrypt group_vars/all/vault.yml
+# В git попадает только зашифрованный vault.yml.
+vault_db_password: ЗАМЕНИТЕ

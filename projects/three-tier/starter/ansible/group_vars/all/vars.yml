@@ -1,0 +1,6 @@
+app_port: 8080
+db_name: notes
+db_user: notes
+# Пароль — только в зашифрованном vault.yml (ansible-vault), здесь — ссылка на него.
+db_password: "{{ vault_db_password }}"
+postgres_version: 16

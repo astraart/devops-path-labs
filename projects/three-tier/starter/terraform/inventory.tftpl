@@ -1,0 +1,15 @@
+# Создан Terraform — не редактируйте вручную.
+# Имена хостов совпадают с именами машин в LXD.
+[lb]
+tt-lb ansible_host=${lb} private_ip=${lb}
+
+[app]
+%{ for i, ip in app ~}
+tt-app${i + 1} ansible_host=${ip} private_ip=${ip}
+%{ endfor ~}
+
+[db]
+tt-db ansible_host=${db} private_ip=${db}
+
+[all:vars]
+ansible_user=ansible
