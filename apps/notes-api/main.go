@@ -2,8 +2,9 @@
 //
 // Настройки — переменные окружения:
 //
-//	PORT      порт HTTP, по умолчанию 8080
-//	DATA_DIR  каталог для notes.json; пусто — заметки только в памяти
+//	PORT          порт HTTP, по умолчанию 8080
+//	DATABASE_URL  строка подключения к PostgreSQL; если задана, заметки хранятся в базе
+//	DATA_DIR      каталог для notes.json, когда базы нет; пусто — заметки только в памяти
 //
 // Флаг -healthcheck: запрос к http://127.0.0.1:PORT/healthz и выход с кодом 0 или 1.
 // Нужен для HEALTHCHECK в образе без оболочки и curl (distroless).
@@ -30,9 +31,9 @@ func main() {
 	}
 
 	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	store, err := NewStore(os.Getenv("DATA_DIR"))
+	store, kind, err := openStore(context.Background())
 	if err != nil {
-		log.Error("не удалось открыть хранилище", "err", err)
+		log.Error("не удалось открыть хранилище", "storage", kind, "err", err)
 		os.Exit(1)
 	}
 	srv := &http.Server{
@@ -45,7 +46,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go func() {
-		log.Info("сервис запущен", "addr", srv.Addr, "version", version, "commit", commit)
+		log.Info("сервис запущен", "addr", srv.Addr, "storage", kind, "version", version, "commit", commit)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("сервер остановлен с ошибкой", "err", err)
 			os.Exit(1)
@@ -59,6 +60,17 @@ func main() {
 		os.Exit(1)
 	}
 	log.Info("сервис остановлен")
+}
+
+// openStore выбирает хранилище: PostgreSQL, если задан DATABASE_URL, иначе файл или память.
+// Пароль из строки подключения в журнал не попадает: пишется только вид хранилища.
+func openStore(ctx context.Context) (Store, string, error) {
+	if url := os.Getenv("DATABASE_URL"); url != "" {
+		s, err := NewPGStore(ctx, url)
+		return s, "postgres", err
+	}
+	s, err := NewFileStore(os.Getenv("DATA_DIR"))
+	return s, "file", err
 }
 
 func env(key, def string) string {

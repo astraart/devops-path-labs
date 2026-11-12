@@ -5,7 +5,7 @@
 #     go vet, go test и статический бинарник: CGO_ENABLED=0 go build -trimpath -ldflags "-s -w ...".
 #  2. Версия и коммит передаются аргументами сборки VERSION и COMMIT
 #     и попадают в бинарник через -ldflags "-X main.version=… -X main.commit=…".
-#  3. Порядок слоёв: сначала go.mod и go mod download, потом исходники — тогда зависимости кешируются.
+#  3. Порядок слоёв: сначала go.mod, go.sum и go mod download, потом исходники — тогда зависимости кешируются.
 #  4. Запуск — gcr.io/distroless/static-debian13:nonroot: только бинарник, без оболочки, не от root.
 #  5. Каталог /data для заметок (DATA_DIR=/data) принадлежит пользователю nonroot (uid 65532),
 #     иначе сервис не сможет писать в именованный том.

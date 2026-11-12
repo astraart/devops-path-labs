@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -20,17 +21,34 @@ var (
 )
 
 // NewHandler — все маршруты сервиса. Шаблоны «МЕТОД /путь/{id}» — ServeMux из Go 1.22+.
-func NewHandler(store *Store, now func() time.Time) http.Handler {
+func NewHandler(store Store, now func() time.Time) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("ok\n"))
 	})
+	// /readyz — готов ли сервис принимать запросы: отвечает ли хранилище (база данных).
+	// Балансировщик и Kubernetes по нему решают, слать ли сюда трафик; /healthz — только «процесс жив».
+	mux.HandleFunc("GET /readyz", func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if err := store.Ping(ctx); err != nil {
+			http.Error(w, "storage unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Write([]byte("ready\n"))
+	})
 	mux.HandleFunc("GET /version", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"version": version, "commit": commit})
 	})
 	mux.HandleFunc("GET /notes", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, store.List())
+		list, err := store.List(r.Context())
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "не удалось прочитать заметки")
+			return
+		}
+		writeJSON(w, http.StatusOK, list)
 	})
 	mux.HandleFunc("POST /notes", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
@@ -46,7 +64,7 @@ func NewHandler(store *Store, now func() time.Time) http.Handler {
 			writeError(w, http.StatusBadRequest, "текст заметки — от 1 до 1000 символов")
 			return
 		}
-		n, err := store.Add(text, now())
+		n, err := store.Add(r.Context(), text, now())
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "не удалось сохранить заметку")
 			return
@@ -58,19 +76,22 @@ func NewHandler(store *Store, now func() time.Time) http.Handler {
 		if !ok {
 			return
 		}
-		n, err := store.Get(id)
-		if errors.Is(err, ErrNotFound) {
+		n, err := store.Get(r.Context(), id)
+		switch {
+		case errors.Is(err, ErrNotFound):
 			writeError(w, http.StatusNotFound, "заметки нет")
-			return
+		case err != nil:
+			writeError(w, http.StatusInternalServerError, "не удалось прочитать заметку")
+		default:
+			writeJSON(w, http.StatusOK, n)
 		}
-		writeJSON(w, http.StatusOK, n)
 	})
 	mux.HandleFunc("DELETE /notes/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id, ok := noteID(w, r)
 		if !ok {
 			return
 		}
-		switch err := store.Delete(id); {
+		switch err := store.Delete(r.Context(), id); {
 		case errors.Is(err, ErrNotFound):
 			writeError(w, http.StatusNotFound, "заметки нет")
 		case err != nil:

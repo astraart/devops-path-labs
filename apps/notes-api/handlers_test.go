@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,7 +15,7 @@ var fixedNow = func() time.Time { return time.Date(2026, 11, 12, 7, 0, 0, 0, tim
 
 func newServer(t *testing.T) *httptest.Server {
 	t.Helper()
-	store, err := NewStore("")
+	store, err := NewFileStore("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,6 +42,27 @@ func TestHealthz(t *testing.T) {
 	srv := newServer(t)
 	if r := do(t, "GET", srv.URL+"/healthz", ""); r.StatusCode != http.StatusOK {
 		t.Fatalf("код %d", r.StatusCode)
+	}
+}
+
+// brokenStore — хранилище, у которого «упала» база.
+type brokenStore struct{ *FileStore }
+
+func (brokenStore) Ping(context.Context) error { return errors.New("connection refused") }
+
+func TestReadyz(t *testing.T) {
+	srv := newServer(t)
+	if r := do(t, "GET", srv.URL+"/readyz", ""); r.StatusCode != http.StatusOK {
+		t.Fatalf("исправное хранилище: код %d", r.StatusCode)
+	}
+	fs, _ := NewFileStore("")
+	broken := httptest.NewServer(NewHandler(brokenStore{fs}, fixedNow))
+	defer broken.Close()
+	if r := do(t, "GET", broken.URL+"/readyz", ""); r.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("база недоступна: код %d, ожидался 503", r.StatusCode)
+	}
+	if r := do(t, "GET", broken.URL+"/healthz", ""); r.StatusCode != http.StatusOK {
+		t.Fatalf("healthz не зависит от базы: код %d", r.StatusCode)
 	}
 }
 

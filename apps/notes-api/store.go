@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -20,19 +21,29 @@ type Note struct {
 // ErrNotFound — заметки с таким номером нет.
 var ErrNotFound = errors.New("note not found")
 
-// Store хранит заметки в памяти. Если задан dir, после каждого изменения
+// Store — хранилище заметок: файл (FileStore) или PostgreSQL (PGStore).
+type Store interface {
+	List(ctx context.Context) ([]Note, error)
+	Get(ctx context.Context, id int) (Note, error)
+	Add(ctx context.Context, text string, now time.Time) (Note, error)
+	Delete(ctx context.Context, id int) error
+	// Ping — готово ли хранилище обслуживать запросы (для /readyz).
+	Ping(ctx context.Context) error
+}
+
+// FileStore хранит заметки в памяти. Если задан dir, после каждого изменения
 // записывает их в dir/notes.json (атомарно, через временный файл) и читает при старте —
 // так заметки переживают перезапуск контейнера, если dir — том.
-type Store struct {
+type FileStore struct {
 	mu    sync.Mutex
 	dir   string
 	next  int
 	notes map[int]Note
 }
 
-// NewStore открывает хранилище; dir == "" — только память.
-func NewStore(dir string) (*Store, error) {
-	s := &Store{dir: dir, next: 1, notes: map[int]Note{}}
+// NewFileStore открывает хранилище; dir == "" — только память.
+func NewFileStore(dir string) (*FileStore, error) {
+	s := &FileStore{dir: dir, next: 1, notes: map[int]Note{}}
 	if dir == "" {
 		return s, nil
 	}
@@ -57,13 +68,16 @@ func NewStore(dir string) (*Store, error) {
 }
 
 // List — все заметки по возрастанию номера.
-func (s *Store) List() []Note {
+func (s *FileStore) List(context.Context) ([]Note, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.sorted()
+	return s.sorted(), nil
 }
 
-func (s *Store) sorted() []Note {
+// Ping — файловое хранилище готово всегда.
+func (s *FileStore) Ping(context.Context) error { return nil }
+
+func (s *FileStore) sorted() []Note {
 	list := make([]Note, 0, len(s.notes))
 	for _, n := range s.notes {
 		list = append(list, n)
@@ -73,7 +87,7 @@ func (s *Store) sorted() []Note {
 }
 
 // Get возвращает заметку или ErrNotFound.
-func (s *Store) Get(id int) (Note, error) {
+func (s *FileStore) Get(_ context.Context, id int) (Note, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	n, ok := s.notes[id]
@@ -84,7 +98,7 @@ func (s *Store) Get(id int) (Note, error) {
 }
 
 // Add создаёт заметку.
-func (s *Store) Add(text string, now time.Time) (Note, error) {
+func (s *FileStore) Add(_ context.Context, text string, now time.Time) (Note, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	n := Note{ID: s.next, Text: text, Created: now.UTC()}
@@ -99,7 +113,7 @@ func (s *Store) Add(text string, now time.Time) (Note, error) {
 }
 
 // Delete удаляет заметку или возвращает ErrNotFound.
-func (s *Store) Delete(id int) error {
+func (s *FileStore) Delete(_ context.Context, id int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	n, ok := s.notes[id]
@@ -115,7 +129,7 @@ func (s *Store) Delete(id int) error {
 }
 
 // save пишет заметки на диск; вызывается под мьютексом.
-func (s *Store) save() error {
+func (s *FileStore) save() error {
 	if s.dir == "" {
 		return nil
 	}
