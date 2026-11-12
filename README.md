@@ -18,7 +18,7 @@
 1. Один раз склонируйте репозиторий:
 
    ```bash
-   git clone АДРЕС_РЕПОЗИТОРИЯ devops-path-labs
+   git clone https://github.com/astraart/devops-path-labs devops-path-labs
    ```
 
 2. Откройте практику в приложении: там показано четырёхзначное число.
