@@ -20,14 +20,14 @@
 1. Один раз склонируйте репозиторий:
 
    ```bash
-   git clone https://github.com/astraart/devops-path-labs devops-path-labs
+   git clone https://github.com/astraart/devops-path-labs ~/devops-path-labs
    ```
 
 2. Откройте практику в приложении: там показано четырёхзначное число.
 3. Запустите проверку с этим числом:
 
    ```bash
-   cd devops-path-labs && ./labs/real.start/check.sh 1234
+   cd ~/devops-path-labs && ./labs/real.start/check.sh 1234
    ```
 
 4. Введите полученный код в приложение. Оно покажет, какие проверки прошли. Пункты, которые скрипт проверить не может (веб-интерфейс GitHub, консоль облака), отметьте вручную.
