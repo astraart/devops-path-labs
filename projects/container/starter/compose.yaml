@@ -1,0 +1,14 @@
+# Локальный запуск: docker compose up -d --build
+# Договорённости, по которым check.sh находит сервис:
+#   образ — notes-api:local, контейнер — notes-api, порт — 127.0.0.1:8080.
+services:
+  notes-api:
+    image: notes-api:local
+    container_name: notes-api
+    build:
+      context: .
+      # TODO: аргументы сборки VERSION и COMMIT
+    ports:
+      - "127.0.0.1:8080:8080"
+    # TODO: именованный том для /data, чтобы заметки переживали пересоздание контейнера
+    # TODO: перезапуск при падении, файловая система только для чтения, no-new-privileges

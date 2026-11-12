@@ -1,0 +1,20 @@
+# Пайплайн GitLab CI. Скопируйте в .gitlab-ci.yml и замените TODO.
+#
+# Требования те же, что и для GitHub Actions:
+#  - стадия test: go vet и go test -race в образе golang с той же версией, что в Dockerfile;
+#  - стадия build: образ собирается в каждом пайплайне; в реестр проекта ($CI_REGISTRY_IMAGE)
+#    публикуется только на ветке по умолчанию и на тегах v*: тег — $CI_COMMIT_SHA, для тега — версия;
+#  - перед публикацией образ проверяет сканер (например, образ aquasec/trivy):
+#    уязвимость CRITICAL с исправлением — пайплайн красный;
+#  - вход в реестр — через $CI_REGISTRY_USER и $CI_REGISTRY_PASSWORD, а не через пароль в файле.
+stages: [test, build, publish]
+
+test:
+  stage: test
+  script:
+    - echo "TODO" && exit 1
+
+build:
+  stage: build
+  script:
+    - echo "TODO" && exit 1

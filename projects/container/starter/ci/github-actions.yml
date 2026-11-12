@@ -1,0 +1,37 @@
+# Пайплайн GitHub Actions. Скопируйте в .github/workflows/ci.yml и замените TODO.
+#
+# Требования:
+#  - на каждый push и pull request: go vet и go test -race;
+#  - образ собирается в каждом запуске, а публикуется в GHCR только на push в main и на теги v*:
+#    тег — полный хеш коммита, для тега v1.2.3 — ещё и 1.2.3 (docker/metadata-action);
+#  - перед публикацией образ проверяет сканер (например, aquasecurity/trivy-action):
+#    уязвимость CRITICAL с исправлением — пайплайн красный, образ не публикуется;
+#  - сторонние действия закреплены по полному хешу коммита: git ls-remote https://github.com/ВЛАДЕЛЕЦ/ДЕЙСТВИЕ refs/tags/vX.Y.Z;
+#  - у токена минимальные права: по умолчанию contents: read, packages: write — только заданию публикации.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "TODO: checkout без сохранения токена, setup-go с версией из go.mod, go vet и go test -race"
+        run: exit 1
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: "TODO: теги образа, сборка с VERSION и COMMIT, сканирование, вход в ghcr.io и публикация (не в pull request)"
+        run: exit 1
