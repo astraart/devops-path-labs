@@ -55,6 +55,8 @@ as_user() {
 }
 
 # check НОМЕР "что проверяем" ФУНКЦИЯ [АРГУМЕНТЫ] — номер совпадает с номером проверки в приложении.
+# Код 3 у функции значит «нужны права root». systemctl is-active тоже отвечает 3 («не запущен»), поэтому
+# в новых проверках после него пишут «|| return 1».
 check() {
     local n="$1" desc="$2" rc=0
     shift 2
@@ -86,6 +88,9 @@ lab_code() {
     code=$((value ^ ((key >> 8) & 0xFFFFFF)))
     printf '%04d-%04d\n' $((code / 10000)) $((code % 10000))
 }
+
+# was_broken — для практик «Почини сломанное»: поломка из break.sh запускалась на этой машине.
+was_broken() { [[ -f "/var/lib/devops-path-lab/$LAB_ID.broken" ]]; }
 
 lab_finish() {
     if [[ ${#MANUAL[@]} -gt 0 ]]; then
