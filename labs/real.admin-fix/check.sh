@@ -13,7 +13,7 @@ old_gone() { [[ ! -e "$OLD" ]] || (( $(stat -c %s "$OLD") < 1024 * 1024 )); }
 no_deleted() {
     local out rc=0
     out="$(as_root find /proc -mindepth 3 -maxdepth 3 -path '/proc/[0-9]*/fd/*' -lname '/var/log/lab-app/*(deleted)' 2>/dev/null)" || rc=$?
-    [[ $rc -eq 3 ]] && return 3
+    [[ $rc -eq $RC_ROOT ]] && return "$RC_ROOT"
     [[ -z "$out" ]]
 }
 active() { systemctl is-active --quiet lab-hog || return 1; }

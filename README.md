@@ -52,7 +52,7 @@
 - работает только на машине с файлом-меткой `/etc/devops-path-lab` — её создают в практике «Своя лаборатория»;
 - требует `sudo` и перед изменениями печатает, что именно сломает и как это вернуть, — без ответа `yes` ничего не меняет;
 - ничего не скачивает: для поломки Docker базовый образ должен быть уже на машине;
-- меняет только свои каталоги и сервисы (`/opt/lab-*`, `/var/log/lab-app`, сервисы `lab-*`) и оставляет отметку в `/var/lib/devops-path-lab/`.
+- меняет только своё и помечает это: каталоги `/opt/lab-*`, `/var/log/lab-app`, `~/git-fix`, `~/ci-fix`, сервисы и сайты nginx `lab-*`, таблицу nftables `lab_guard`, роль и базу PostgreSQL `labapp`/`labfix`, строки с пометкой `devops-path-lab` в `/etc/hosts` и `pg_hba.conf`; оставляет отметку в `/var/lib/devops-path-lab/`.
 
 ```bash
 cd ~/devops-path-labs && git pull && sudo ./labs/real.linux-system-fix/break.sh

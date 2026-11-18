@@ -33,14 +33,16 @@ lab_init() {
 }
 
 # as_root КОМАНДА — выполнить от root: напрямую, если уже root, иначе через sudo без пароля.
-# Код 3 — прав нет (проверка помечается «?», а не «нет»).
+# Код RC_ROOT (77) — прав нет: проверка помечается «?», а не «нет». Отдельное число, а не 3:
+# systemctl is-active и systemctl status отвечают 3, когда сервис просто не запущен.
+RC_ROOT=77
 as_root() {
     if [[ $EUID -eq 0 ]]; then
         "$@"
     elif sudo -n true 2>/dev/null; then
         sudo -n "$@"
     else
-        return 3
+        return "$RC_ROOT"
     fi
 }
 
@@ -55,8 +57,7 @@ as_user() {
 }
 
 # check НОМЕР "что проверяем" ФУНКЦИЯ [АРГУМЕНТЫ] — номер совпадает с номером проверки в приложении.
-# Код 3 у функции значит «нужны права root». systemctl is-active тоже отвечает 3 («не запущен»), поэтому
-# в новых проверках после него пишут «|| return 1».
+# Код RC_ROOT у функции значит «нужны права root», любой другой ненулевой — «не выполнено».
 check() {
     local n="$1" desc="$2" rc=0
     shift 2
@@ -65,7 +66,7 @@ check() {
     if [[ $rc -eq 0 ]]; then
         MASK=$((MASK | (1 << n)))
         echo "  ✓ $desc"
-    elif [[ $rc -eq 3 ]]; then
+    elif [[ $rc -eq $RC_ROOT ]]; then
         NEED_ROOT=1
         echo "  ? $desc — нужны права root: запустите через sudo"
     else

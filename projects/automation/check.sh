@@ -100,7 +100,7 @@ backup_ok() {
 keep_value() {
     local line rc=0
     line="$(as_root grep -E '^KEEP=' /etc/server-automation/config.env)" || rc=$?
-    [[ $rc -eq 3 ]] && return 3
+    [[ $rc -eq $RC_ROOT ]] && return "$RC_ROOT"
     line="${line##*=}"
     line="${line//\"/}"
     if [[ "$line" =~ ^[0-9]+$ ]]; then echo "$line"; else echo 7; fi

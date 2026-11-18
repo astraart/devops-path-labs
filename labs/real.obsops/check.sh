@@ -8,9 +8,9 @@ lab_init real.obsops "$@"
 
 M="$H/mon"
 # promtool и amtool — только если установлены локально (контейнеры скрипт не запускает)
-rules() { command -v promtool >/dev/null || return 3; (cd "$M" && promtool test rules tests.yml); }
+rules() { command -v promtool >/dev/null || return "$RC_ROOT"; (cd "$M" && promtool test rules tests.yml); }
 routes() {
-    command -v amtool >/dev/null || return 3
+    command -v amtool >/dev/null || return "$RC_ROOT"
     local out
     out="$(amtool config routes test --config.file="$M/alertmanager.yml" severity=critical team=db)"
     grep -q 'db-team' <<<"$out"

@@ -9,7 +9,7 @@ lab_init real.databases "$@"
 q() { PGCONNECT_TIMEOUT=3 psql -w -h localhost -U app -tA "$@"; }
 restored() {
     local n
-    n="$(q -d shop_check -c 'select count(*) from orders')" || { [[ -z "${PGPASSWORD:-}" ]] && return 3; return 1; }
+    n="$(q -d shop_check -c 'select count(*) from orders')" || { [[ -z "${PGPASSWORD:-}" ]] && return "$RC_ROOT"; return 1; }
     [[ "$n" == "1000" ]]
 }
 dump() { local out; out="$(pg_restore -l "$H/pgbackup/shop.dump")"; grep -q 'Format: CUSTOM' <<<"$out"; }
